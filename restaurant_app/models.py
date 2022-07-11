@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -9,6 +9,7 @@ class Item(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    price = Column(Float)
     available = Column(Boolean, default=True)
 
 
@@ -25,5 +26,7 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     paid = Column(Boolean, default=False)
-    table_id = relationship("Table")
+    table_id = Column(Integer, ForeignKey("tables.id"))
+    table = relationship("Table")
+    item_id = Column(Integer, ForeignKey("items.id"))
     items = relationship("Item")

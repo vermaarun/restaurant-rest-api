@@ -1,2 +1,2 @@
 # restaurant-rest-api
-REST APIs for restaurants to to orders and billing
+REST APIs for restaurants to do orders and billing

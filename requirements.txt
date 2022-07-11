@@ -3,3 +3,6 @@ cryptography~=36.0.1
 py~=1.11.0
 lxml~=4.7.1
 setuptools~=56.0.0
+fastapi~=0.75.0
+SQLAlchemy~=1.4.39
+pydantic~=1.8.2

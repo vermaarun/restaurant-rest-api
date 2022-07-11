@@ -43,24 +43,29 @@ def update_item_by_id(db: Session,
 
 
 # Table
-def create_table():
-    pass
+def create_table(db: Session, table: schemas.Table):
+    db_table = models.Table(**table.dict())
+    db.add(db_table)
+    db.commit()
+    db.refresh(db_table)
+    return db_table
 
 
-def get_table_by_id():
-    pass
+def get_table_by_id(db: Session, id: int):
+    return db.query(models.Table).filter(models.Table.id == id).first()
 
 
-def get_tables():
-    pass
+def get_tables(db: Session):
+    return db.query(models.Table).all()
 
 
 def update_table_by_id():
     pass
 
 
-def delete_table_by_id():
-    pass
+def delete_table_by_id(db: Session, id: int):
+    db.query(models.Table).filter(models.Table.id == id).delete()
+    db.commit()
 
 
 # Order

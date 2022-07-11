@@ -61,18 +61,25 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 
 # /tables/ endpoints
 @app.post("/tables/", response_model=schemas.Table)
-def create_table():
-    pass
+def create_table(table: schemas.Table, db: Session = Depends(get_db)):
+    db_table = crud.get_table_by_id(db, id=table.id)
+    if db_table:
+        raise HTTPException(status_code=400, detail="Table already registered")
+    return crud.create_table(db=db, table=table)
 
 
 @app.get("/tables/{table_id}", response_model=schemas.Table)
-def get_table():
-    pass
+def get_table(table_id: int, db: Session = Depends(get_db)):
+    db_table = crud.get_table_by_id(db, id=table_id)
+    if db_table is None:
+        raise HTTPException(status_code=404, detail="Table not found")
+    return db_table
 
 
 @app.get("/tables/", response_model=list[schemas.Table])
-def get_tables():
-    pass
+def get_tables(db: Session = Depends(get_db)):
+    tables = crud.get_tables(db=db)
+    return tables
 
 
 @app.put("/tables/{table_id}", response_model=schemas.Table)
@@ -81,8 +88,9 @@ def update_table():
 
 
 @app.delete("/tables/{table_id}", response_model=schemas.Table)
-def delete_table():
-    pass
+def delete_table(table_id: int, db: Session = Depends(get_db)):
+    crud.delete_table_by_id(db, id=table_id)
+    return {"ok": True}
 
 
 # order related endpoints

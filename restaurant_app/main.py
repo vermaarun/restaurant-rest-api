@@ -53,10 +53,9 @@ def update_item(item_id: int,
     return {"Item": "Updated"}
 
 
-@app.delete("/items/{item_id}")
+@app.delete("/items/{item_id}", status_code=204)
 def delete_item(item_id: int, db: Session = Depends(get_db)):
     crud.delete_item_by_id(db, id=item_id)
-    return {"ok": True}
 
 
 # /tables/ endpoints
@@ -87,10 +86,9 @@ def update_table():
     pass
 
 
-@app.delete("/tables/{table_id}", response_model=schemas.Table)
+@app.delete("/tables/{table_id}", status_code=204)
 def delete_table(table_id: int, db: Session = Depends(get_db)):
     crud.delete_table_by_id(db, id=table_id)
-    return {"ok": True}
 
 
 # order related endpoints
@@ -111,7 +109,7 @@ def add_item_to_table(table_id: int,
     return {"Item": "Added"}
 
 
-@app.delete("/tables/{table_id}/items/{item_id}", response_model=schemas.Item)
+@app.delete("/tables/{table_id}/items/{item_id}", status_code=204)
 def delete_item_from_table(
         table_id: int,
         item_id: int,
@@ -120,7 +118,6 @@ def delete_item_from_table(
     # you can only delete the item that has not been placed
     # contact staff in case you want to delete placed item
     crud.delete_item_from_table(db=db, table_id=table_id, item_id=item_id)
-    return {"ok": True}
 
 
 @app.post("/orders/tables/{table_id}")
@@ -145,5 +142,6 @@ def get_current_order_by_table_id(
 
 # this endpoint will make table available for next customer
 @app.put("/tables/{table_id}/paid")
-def update_order_by_table_id():
-    pass
+def update_order_by_table_id(table_id: int, db: Session = Depends(get_db)):
+    crud.mark_order_paid(db=db, table_id=table_id)
+    return {"message": "Thank you for visiting!!"}

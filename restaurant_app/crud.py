@@ -133,5 +133,18 @@ def get_current_order_by_table_id(db: Session, table_id: int):
     ).all()
 
 
-def clean_table():    # make ready for next customer
-    pass
+def mark_order_paid(db: Session, table_id: int):
+    db_orders = db.query(
+        models.OrderStatus
+    ).filter(and_(
+        models.OrderStatus.table_id == table_id,
+        models.OrderStatus.status == "In Progress")
+    ).all()
+    if not db_orders:
+        return ""
+
+    for order in db_orders:
+        setattr(order, "status", "paid")
+
+    db.add_all(db_orders)
+    db.commit()

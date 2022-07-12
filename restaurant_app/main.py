@@ -1,10 +1,16 @@
 from fastapi import FastAPI, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
+
+
+class Detail(BaseModel):
+    detail: str
+
 
 app = FastAPI()
 
@@ -19,11 +25,14 @@ def get_db():
 
 
 # /items/ endpoints
-@app.post("/items/", response_model=schemas.Item)
+@app.post("/items/",
+          response_model=schemas.Item,
+          responses={409: {"model": Detail}}
+          )
 def create_item(item: schemas.Item, db: Session = Depends(get_db)):
     db_item = crud.get_item_by_name(db, name=item.name)
     if db_item:
-        raise HTTPException(status_code=400, detail="Item already registered")
+        raise HTTPException(status_code=409, detail="Item already registered")
     return crud.create_item(db=db, item=item)
 
 
@@ -59,11 +68,14 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 
 
 # /tables/ endpoints
-@app.post("/tables/", response_model=schemas.Table)
+@app.post("/tables/",
+          response_model=schemas.Table,
+          responses={409: {"model": Detail}}
+          )
 def create_table(table: schemas.Table, db: Session = Depends(get_db)):
     db_table = crud.get_table_by_id(db, id=table.id)
     if db_table:
-        raise HTTPException(status_code=400, detail="Table already registered")
+        raise HTTPException(status_code=409, detail="Table already registered")
     return crud.create_table(db=db, table=table)
 
 

@@ -140,8 +140,8 @@ def get_current_order_by_table_id(
     return crud.get_current_order_by_table_id(db=db, table_id=table_id)
 
 
-# this endpoint will make table available for next customer
-@app.put("/tables/{table_id}/paid")
+# this endpoint will mark the current order by table id as paid
+@app.put("/tables/{table_id}/paid", include_in_schema=False)
 def update_order_by_table_id(table_id: int, db: Session = Depends(get_db)):
     crud.mark_order_paid(db=db, table_id=table_id)
     return {"message": "Thank you for visiting!!"}

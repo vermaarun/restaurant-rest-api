@@ -94,19 +94,53 @@ def delete_table(table_id: int, db: Session = Depends(get_db)):
 
 
 # order related endpoints
-@app.post("/tables/{table_id}/items/{item_id}", response_model=schemas.Item)
-def add_item_to_table():
-    pass
-
-
-@app.get("/tables/{table_id}/items/", response_model=list[schemas.Item])
-def get_order_by_table_id():
-    pass
+@app.post("/tables/{table_id}/items/{item_id}")
+def add_item_to_table(table_id: int,
+                      item_id: int,
+                      db: Session = Depends(get_db)
+                      ):
+    # 1. check if item exist
+    db_item = crud.get_item_by_id(db=db, id=item_id)
+    if db_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    # 2. check if table exist
+    db_table = crud.get_table_by_id(db=db, id=table_id)
+    if db_table is None:
+        raise HTTPException(status_code=404, detail="Table not found")
+    crud.add_item_to_table(db_item, table_id, db)
+    return {"Item": "Added"}
 
 
 @app.delete("/tables/{table_id}/items/{item_id}", response_model=schemas.Item)
-def delete_item_from_table():
-    pass
+def delete_item_from_table(
+        table_id: int,
+        item_id: int,
+        db: Session = Depends(get_db)
+        ):
+    # you can only delete the item that has not been placed
+    # contact staff in case you want to delete placed item
+    crud.delete_item_from_table(db=db, table_id=table_id, item_id=item_id)
+    return {"ok": True}
+
+
+@app.post("/orders/tables/{table_id}")
+def create_order_for_table(table_id: int, db: Session = Depends(get_db)):
+    order_id = crud.place_order(db=db, table_id=table_id)
+    return {"order id": order_id}
+
+
+@app.get("/orders/{order_id}", response_model=list[schemas.OrderDetail])
+def get_order_by_order_id(order_id: str, db: Session = Depends(get_db)):
+    orders = crud.get_order_by_order_id(db=db, order_id=order_id)
+    return orders
+
+
+@app.get("/orders/tables/{order_id}")
+def get_current_order_by_table_id(
+        table_id: int,
+        db: Session = Depends(get_db)
+):
+    return crud.get_current_order_by_table_id(db=db, table_id=table_id)
 
 
 # this endpoint will make table available for next customer

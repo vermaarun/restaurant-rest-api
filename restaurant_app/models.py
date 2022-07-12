@@ -21,12 +21,22 @@ class Table(Base):
     occupied = Column(Boolean, default=False)
 
 
-class Order(Base):
+class OrderStatus(Base):
+    __tablename__ = "order_status"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    table_id = Column(Integer)
+    order_id = Column(String)
+    status = Column(String)
+
+
+class OrderDetail(Base):
     __tablename__ = "orders"
 
-    id = Column(Integer, primary_key=True, index=True)
-    paid = Column(Boolean, default=False)
-    table_id = Column(Integer, ForeignKey("tables.id"))
-    table = relationship("Table")
-    item_id = Column(Integer, ForeignKey("items.id"))
-    items = relationship("Item")
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # paid = Column(Boolean, default=False)
+    table_id = Column(Integer)
+    item_id = Column(Integer)
+    item_name = Column(String)
+    item_price = Column(Float)
+    order_id = Column(String, default="0000")

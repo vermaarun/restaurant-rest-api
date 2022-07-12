@@ -1,4 +1,7 @@
+import uuid
+
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from . import models, schemas
 
@@ -69,16 +72,65 @@ def delete_table_by_id(db: Session, id: int):
 
 
 # Order
-def add_item_to_table():    # create order
-    pass
+def add_item_to_table(item: schemas.Item, table_id: int, db: Session):
+    db_order = models.OrderDetail(table_id=table_id,
+                                  item_name=item.name,
+                                  item_price=item.price
+                                  )
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
 
 
-def get_order_by_table_id():
-    pass
+def get_order_by_order_id(db: Session, order_id: str):
+    return db.query(models.OrderDetail).filter(
+        models.OrderDetail.order_id == order_id
+    ).all()
 
 
-def delete_item_from_table():
-    pass
+def delete_item_from_table(db: Session, table_id: int, item_id: int):
+    db.query(models.OrderDetail).filter(and_(
+        models.OrderDetail.table_id == table_id,
+        models.OrderDetail.item_id == item_id,
+        models.OrderDetail.order_id == "0000"
+    )).delete()
+    db.commit()
+
+
+def place_order(db: Session, table_id: int):
+    db_items = (
+        db.query(
+            models.OrderDetail
+        ).filter(and_(models.OrderDetail.table_id == table_id,
+                      models.OrderDetail.order_id == "0000")).all()
+    )
+
+    if db_items:
+        order_id = str(uuid.uuid4())
+    else:
+        return None
+    for db_item in db_items:
+        setattr(db_item, "order_id", order_id)
+    db.add_all(db_items)
+    db.commit()
+
+    order_status = models.OrderStatus(order_id=order_id,
+                                      table_id=table_id,
+                                      status="In Progress"
+                                      )
+    db.add(order_status)
+    db.commit()
+    db.refresh(order_status)
+    return order_id
+
+
+def get_current_order_by_table_id(db: Session, table_id: int):
+    return db.query(models.OrderStatus).filter(
+        and_(
+            models.OrderStatus.table_id == table_id,
+            models.OrderStatus.status == "In Progress"
+        )
+    ).all()
 
 
 def clean_table():    # make ready for next customer

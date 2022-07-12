@@ -32,11 +32,13 @@ class Table(BaseModel):
         orm_mode = True
 
 
-class Order(BaseModel):
+class OrderDetail(BaseModel):
     id: int
     table_id: int
-    paid: Union[bool, None] = False
-    items: list[Item] = []
+    # paid: Union[bool, None] = False
+    item_name: str
+    item_price: float
+    order_id: str = None
 
     class Config:
         orm_mode = True

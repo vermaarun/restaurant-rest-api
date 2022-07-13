@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException
+from typing import Union
+
+from fastapi import FastAPI, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -190,7 +192,15 @@ def get_current_order_by_table_id(
 
 
 # this endpoint will mark the current order by table id as paid
-@app.put("/tables/{table_id}/paid", include_in_schema=False)
-def update_order_by_table_id(table_id: int, db: Session = Depends(get_db)):
+@app.put("/tables/{table_id}/paid",
+         responses={403: {"model": Detail}},
+         tags=["admin"],
+         )
+def update_order_by_table_id(table_id: int,
+                             db: Session = Depends(get_db),
+                             x_token: Union[str, None] = Header(default=None)
+                             ):
+    if x_token is None or x_token != "random_admin_token":
+        raise HTTPException(status_code=403, detail="Forbidden")
     crud.mark_order_paid(db=db, table_id=table_id)
     return {"message": "Thank you for visiting!!"}
